@@ -18,6 +18,7 @@ namespace MiniPlInterpreter
         SEMICOLON,      // ';'
         LEFT_PAREN,     // '('
         RIGHT_PAREN,    // ')'
+        EQUAL,          // '='
 
         // Multiple-character tokens
         ASSIGNMENT,     // ':='

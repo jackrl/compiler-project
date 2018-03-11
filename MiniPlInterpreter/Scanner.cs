@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace MiniPlInterpreter
 {
@@ -68,6 +69,7 @@ namespace MiniPlInterpreter
                 case ';': AddToken(TokenType.SEMICOLON); break;
                 case '(': AddToken(TokenType.LEFT_PAREN); break;
                 case ')': AddToken(TokenType.RIGHT_PAREN); break;
+                case '=': AddToken(TokenType.EQUAL); break;
 
                 case ':': AddToken(Match('=') ? TokenType.ASSIGNMENT : TokenType.COLON); break;
                 case '.':
@@ -79,39 +81,7 @@ namespace MiniPlInterpreter
                     errors.Add(new Error(line, "Expected '.' after '.'"));
                     break;
                 case '/':
-                    if (Match('/'))
-                    {
-                        // Single line comment
-                        while (Peek() != '\n' && !ReachedEnd()) Advance();
-                    }
-                    else if (Match('*'))
-                    {
-                        // Multiline comment
-                        bool commentEnded = false;
-                        while (!commentEnded) {
-                            while (Peek() != '*' && !ReachedEnd())
-                            {
-                                Advance();
-                            }
-                            if (ReachedEnd())
-                            {
-                                errors.Add(new Error(line, $"Reached end of file without closing block comment, expected '*/'"));
-                                break;
-                            }
-
-                            Advance();
-                            if (Peek() == '/')
-                            {
-                                Advance();
-                                commentEnded = true;
-                            }
-                        }
-                        
-                    }
-                    else
-                    {
-                        AddToken(TokenType.SLASH);
-                    }
+                    if (!SkipComments()) AddToken(TokenType.SLASH);
                     break;
 
                 case '"': String(); break;
@@ -164,12 +134,50 @@ namespace MiniPlInterpreter
             return source[current];
         }
 
-        // Unescape scapable characters
+        private bool SkipComments()
+        {
+            if (Match('/'))
+            {
+                // Single line comment
+                while (Peek() != '\n' && !ReachedEnd()) Advance();
+                return true;
+            }
+            else if (Match('*'))
+            {
+                // Multiline comment
+                bool commentEnded = false;
+                while (!commentEnded)
+                {
+                    while (Peek() != '*' && !ReachedEnd())
+                    {
+                        Advance();
+                    }
+                    if (ReachedEnd())
+                    {
+                        errors.Add(new Error(line, $"Reached end of file without closing block comment. Expected '*/'"));
+                        break;
+                    }
+
+                    Advance();
+                    if (Peek() == '/')
+                    {
+                        Advance();
+                        commentEnded = true;
+                    }
+                }
+                return true;
+            }
+            else return false;
+        }
+
         private void String()
         {
-            while (Peek() != '"' && Peek() != '\n' && !ReachedEnd())
+            var sb = new StringBuilder();
+            while (Peek() != '\n' && !ReachedEnd())
             {
-                Advance();
+                if (Peek() == '\\') AddEscapeSequence(sb);
+                else if (Peek() == '"') break;
+                else sb.Append(Advance());
             }
 
             if (Peek() == '\n' || ReachedEnd())
@@ -180,8 +188,32 @@ namespace MiniPlInterpreter
 
             Advance();
 
-            String value = source.Substring(start + 1, current - start - 2);
+            String value = sb.ToString();
             AddToken(TokenType.STRING, value);
+        }
+
+        private void AddEscapeSequence(StringBuilder sb)
+        {
+            Advance();
+            char nextChar = Peek();
+            switch (nextChar)
+            {
+                case 'a': sb.Append('\a'); break;
+                case 'b': sb.Append('\b'); break;
+                case 'f': sb.Append('\f'); break;
+                case 'n': sb.Append('\n'); break;
+                case 'r': sb.Append('\r'); break;
+                case 't': sb.Append('\t'); break;
+                case 'v': sb.Append('\v'); break;
+                case '\\': sb.Append('\\'); break;
+                case '\'': sb.Append('\''); break;
+                case '"': sb.Append('\"'); break;
+                default:
+                    errors.Add(new Error(line, $"Unrecongnized escape sequence '\\{nextChar}'"));
+                    sb.Append($"\\{nextChar}");
+                    break;
+            }
+            Advance();
         }
 
         private void Number()

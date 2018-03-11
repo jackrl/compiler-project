@@ -47,15 +47,25 @@ namespace MiniPlInterpreter
             }
         }
 
-private static void Run(String source)
+        private static void Run(String source)
         {
             Scanner scanner = new Scanner(source);
             List<Token> tokens = scanner.ScanTokens();
 
             // For now, just print the tokens.
+            Console.WriteLine("Tokens:");
             foreach (var token in tokens)
             {
                 Console.WriteLine(token);
+            }
+            var errors = scanner.Errors;
+            if (errors.Count > 0)
+            {
+                Console.WriteLine("Errors:");
+                foreach (var error in errors)
+                {
+                    Console.WriteLine(error);
+                }
             }
         }
     }
