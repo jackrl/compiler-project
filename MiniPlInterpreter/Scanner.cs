@@ -145,16 +145,21 @@ namespace MiniPlInterpreter
             else if (Match('*'))
             {
                 // Multiline comment
-                bool commentEnded = false;
-                while (!commentEnded)
+                int nestedComments = 1;
+                while (nestedComments > 0)
                 {
                     while (Peek() != '*' && !ReachedEnd())
                     {
+                        if(Peek() == '/')
+                        {
+                            Advance();
+                            if (Peek() == '*') nestedComments++;
+                        }
                         Advance();
                     }
                     if (ReachedEnd())
                     {
-                        errors.Add(new Error(line, $"Reached end of file without closing block comment. Expected '*/'"));
+                        errors.Add(new Error(line, $"Reached end of file without closing block comment. Expected '*/' {nestedComments} more times"));
                         break;
                     }
 
@@ -162,7 +167,7 @@ namespace MiniPlInterpreter
                     if (Peek() == '/')
                     {
                         Advance();
-                        commentEnded = true;
+                        nestedComments--;
                     }
                 }
                 return true;

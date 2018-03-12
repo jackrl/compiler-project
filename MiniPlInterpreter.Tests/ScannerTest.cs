@@ -55,18 +55,31 @@ namespace MiniPlInterpreter.Tests
 
             var tokens = scanner.ScanTokens();
             Assert.IsTrue(tokens.Count == 46);
-            Assert.IsTrue(scanner.Errors.Count == 0);
         }
 
         [TestMethod]
         public void BlockCommentDoesntEndErrorTest()
         {
-            var source = @"/*               
-                           !*+-/< // operators";
+            var source = @"/*/*
+                           !*+-/< */// operators";
             var scanner = new Scanner(source);
 
             var tokens = scanner.ScanTokens();
             Assert.IsTrue(scanner.Errors.Count == 1);
+        }
+
+        [TestMethod]
+        public void NestedCommentsTest()
+        {
+            var source = @"var a : int := 0/*
+                           /*Nested part*/
+                           */
+                           print ""Something to print""";
+            var scanner = new Scanner(source);
+
+            var tokens = scanner.ScanTokens();
+            Assert.IsTrue(tokens.Count == 9);
+            Assert.IsTrue(scanner.Errors.Count == 0);
         }
 
         [TestMethod]
