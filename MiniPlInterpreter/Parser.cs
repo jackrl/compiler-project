@@ -7,7 +7,7 @@ using System.Text;
 
 namespace MiniPlInterpreter
 {
-    class Parser<T>
+    class Parser
     {
         private readonly List<Token> tokens;
         private int current = 0;
@@ -19,9 +19,9 @@ namespace MiniPlInterpreter
             this.tokens = tokens;
         }
 
-        public List<IStatement<T>> Parse()
+        public List<IStatement> Parse()
         {
-            var statements = new List<IStatement<T>>();
+            var statements = new List<IStatement>();
             while (!IsAtEnd())
             {
                 statements.Add(Declaration());
@@ -30,7 +30,7 @@ namespace MiniPlInterpreter
             return statements;
         }
 
-        private IStatement<T> Declaration()
+        private IStatement Declaration()
         {
             try
             {
@@ -45,7 +45,7 @@ namespace MiniPlInterpreter
             }
         }
 
-        private IStatement<T> VarDeclaration()
+        private IStatement VarDeclaration()
         {
             var name = Consume(TokenType.IDENTIFIER, "0006", "Expected variable name.");
 
@@ -62,17 +62,17 @@ namespace MiniPlInterpreter
             }
 
 
-            IExpression<T> initializer = null;
+            IExpression initializer = null;
             if (Match(TokenType.ASSIGNMENT))
             {
                 initializer = Expression();
             }
 
             Consume(TokenType.SEMICOLON, "0009", "Expected ';' after variable declaration.");
-            return new Var<T>(name, type, initializer);
+            return new Var(name, type, initializer);
         }
 
-        private IStatement<T> Statement()
+        private IStatement Statement()
         {
             if (Match(TokenType.PRINT)) return PrintStatement();
             if (Match(TokenType.READ)) return ReadStatement();
@@ -82,23 +82,23 @@ namespace MiniPlInterpreter
             return ExpressionStatement();
         }
 
-        private IStatement<T> PrintStatement()
+        private IStatement PrintStatement()
         {
             var value = Expression();
             Consume(TokenType.SEMICOLON, "0003", "Expected ';' after value to print.");
-            return new Print<T>(value);
+            return new Print(value);
         }
 
-        private IStatement<T> ReadStatement()
+        private IStatement ReadStatement()
         {
             var name = Identifier();
             Consume(TokenType.SEMICOLON, "0011", "Expected ';' after varibale to read to.");
-            return new Read<T>(name);
+            return new Read(name);
         }
-        private IStatement<T> AssertStatement()
+        private IStatement AssertStatement()
         {
             var token = Previous();
-            IExpression<T> assertion;
+            IExpression assertion;
             if (Check(TokenType.LEFT_PAREN))
             {
                 assertion = Expression();
@@ -116,10 +116,10 @@ namespace MiniPlInterpreter
             }
             
             Consume(TokenType.SEMICOLON, "0019", "Expected ';' after the assertion of assert.");
-            return new Assert<T>(token, assertion);
+            return new Assert(token, assertion);
         }
 
-        private IStatement<T> ForStatement()
+        private IStatement ForStatement()
         {
             var controlVar = Identifier();
             Consume(TokenType.IN, "0012", "Expected 'in' after the control varibale of the for loop.");
@@ -128,7 +128,7 @@ namespace MiniPlInterpreter
             var end = Expression();
             Consume(TokenType.DO, "0014", "Expected 'do' after the end expression of the for loop.");
 
-            var statements = new List<IStatement<T>>();
+            var statements = new List<IStatement>();
             while (!IsAtEnd() && !Match(TokenType.END))
             {
                 try
@@ -144,14 +144,14 @@ namespace MiniPlInterpreter
             Consume(TokenType.FOR, "0015", "Expected 'for' at the end of the loop after 'end'.");
             Consume(TokenType.SEMICOLON, "0016", "Expected ';' at the end of the loop after the ending 'for'.");
 
-            return new For<T>(controlVar, start, end, statements);
+            return new For(controlVar, start, end, statements);
         }
 
-        private IStatement<T> ExpressionStatement()
+        private IStatement ExpressionStatement()
         {
             var expr = Expression();
             Consume(TokenType.SEMICOLON, "0004", "Expected ';' after expression.");
-            return new ExpressionStmt<T>(expr);
+            return new ExpressionStmt(expr);
         }
 
         private Token Identifier()
@@ -161,12 +161,12 @@ namespace MiniPlInterpreter
             throw new ParserErrorException();
         }
 
-        private IExpression<T> Expression()
+        private IExpression Expression()
         {
             return Assignment();
         }
 
-        private IExpression<T> Assignment()
+        private IExpression Assignment()
         {
             var expr = And();
 
@@ -175,10 +175,10 @@ namespace MiniPlInterpreter
                 var equals = Previous();
                 var value = Assignment();
 
-                if (expr.GetType().Equals(typeof(Variable<T>)))
+                if (expr.GetType().Equals(typeof(Variable)))
                 {
-                    Token name = ((Variable<T>)expr).Name;
-                    return new Assign<T>(name, value);
+                    Token name = ((Variable)expr).Name;
+                    return new Assign(name, value);
                 }
 
                 HandleError(equals, "0010", "Invalid assignment target.");
@@ -188,7 +188,7 @@ namespace MiniPlInterpreter
             return expr;
         }
 
-        private IExpression<T> And()
+        private IExpression And()
         {
             var expr = Equality();
 
@@ -196,13 +196,13 @@ namespace MiniPlInterpreter
             {
                 var oper = Previous();
                 var right = Equality();
-                expr = new Logical<T>(expr, oper, right);
+                expr = new Logical(expr, oper, right);
             }
 
             return expr;
         }
 
-        private IExpression<T> Equality()
+        private IExpression Equality()
         {
             var expr = Addition();
 
@@ -210,13 +210,13 @@ namespace MiniPlInterpreter
             {
                 Token oper = Previous();
                 var right = Addition();
-                expr = new Binary<T>(expr, oper, right);
+                expr = new Binary(expr, oper, right);
             }
 
             return expr;
         }
 
-        private IExpression<T> Addition()
+        private IExpression Addition()
         {
             var expr = Multiplication();
 
@@ -224,13 +224,13 @@ namespace MiniPlInterpreter
             {
                 Token oper = Previous();
                 var right = Multiplication();
-                expr = new Binary<T>(expr, oper, right);
+                expr = new Binary(expr, oper, right);
             }
 
             return expr;
         }
 
-        private IExpression<T> Multiplication()
+        private IExpression Multiplication()
         {
             var expr = Unary();
 
@@ -238,41 +238,41 @@ namespace MiniPlInterpreter
             {
                 Token oper = Previous();
                 var right = Unary();
-                expr = new Binary<T>(expr, oper, right);
+                expr = new Binary(expr, oper, right);
             }
 
             return expr;
         }
 
-        private IExpression<T> Unary()
+        private IExpression Unary()
         {
             if (Match(TokenType.BANG, TokenType.MINUS))
             {
                 Token oper = Previous();
                 var right = Unary();
-                return new Unary<T>(oper, right);
+                return new Unary(oper, right);
             }
 
             return Operand();
         }
 
-        private IExpression<T> Operand()
+        private IExpression Operand()
         {
             if (Match(TokenType.INTEGER, TokenType.STRING))
             {
-                return new Literal<T>(Previous().Literal);
+                return new Literal(Previous().Literal);
             }
 
             if (Match(TokenType.IDENTIFIER))
             {
-                return new Variable<T>(Previous());
+                return new Variable(Previous());
             }
 
             if (Match(TokenType.LEFT_PAREN))
             {
                 var expr = Expression();
                 Consume(TokenType.RIGHT_PAREN, "0001", "Expected ')' after expression.");
-                return new Grouping<T>(expr);
+                return new Grouping(expr);
             }
 
             // TODO: Is this ok?

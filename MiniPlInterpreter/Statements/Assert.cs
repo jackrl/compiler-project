@@ -5,18 +5,18 @@ using System.Text;
 
 namespace MiniPlInterpreter.Statements
 {
-    class Assert<T> : IStatement<T>
+    class Assert : IStatement
     {
         public Token Token { get; }
-        public IExpression<T> Expression { get; }
+        public IExpression Expression { get; }
 
-        public Assert(Token token, IExpression<T> expr)
+        public Assert(Token token, IExpression expr)
         {
             Token = token;
             Expression = expr;
         }
 
-        public void Accept(IVisitor<T> visitor)
+        public void Accept(IVisitor visitor)
         {
             visitor.VisitAssertStmt(this);
         }

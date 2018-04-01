@@ -5,16 +5,16 @@ using MiniPlInterpreter.Expressions;
 
 namespace MiniPlInterpreter.Statements
 {
-    class ExpressionStmt<T> : IStatement<T>
+    class ExpressionStmt : IStatement
     {
-        public IExpression<T> Expression { get; }
+        public IExpression Expression { get; }
 
-        public ExpressionStmt(IExpression<T> expr)
+        public ExpressionStmt(IExpression expr)
         {
             Expression = expr;
         }
 
-        public void Accept(IVisitor<T> visitor)
+        public void Accept(IVisitor visitor)
         {
             visitor.VisitExpressionStmt(this);
         }

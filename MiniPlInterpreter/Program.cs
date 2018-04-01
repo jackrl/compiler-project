@@ -1,5 +1,4 @@
 ﻿using MiniPlInterpreter.Expressions;
-using MiniPlInterpreter.Helpers;
 using MiniPlInterpreter.Statements;
 using System;
 using System.Collections.Generic;
@@ -68,16 +67,9 @@ namespace MiniPlInterpreter
                     Console.WriteLine(error);
                 }
             }
-            /*
-            Console.WriteLine("Tokens:");
-            foreach (var token in tokens)
-            {
-                Console.WriteLine(token);
-            }
-            */
 
             // PARSER
-            Parser<Object> parser = new Parser<Object>(tokens);
+            Parser parser = new Parser(tokens);
             var statements = parser.Parse();
 
             // Parser output

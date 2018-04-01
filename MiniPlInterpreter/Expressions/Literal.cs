@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MiniPlInterpreter.Expressions
 {
-    class Literal<T> : IExpression<T>
+    class Literal : IExpression
     {
         public Object Value { get; }
 
@@ -13,7 +13,7 @@ namespace MiniPlInterpreter.Expressions
             Value = value;
         }
 
-        public T Accept(IVisitor<T> visitor)
+        public object Accept(IVisitor visitor)
         {
             return visitor.VisitLiteralExpr(this);
         }

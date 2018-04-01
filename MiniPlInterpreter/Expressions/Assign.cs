@@ -5,18 +5,18 @@ using System.Text;
 
 namespace MiniPlInterpreter.Expressions
 {
-    class Assign<T> : IExpression<T>
+    class Assign : IExpression
     {
         public Token Name { get; }
-        public IExpression<T> Value { get; }
+        public IExpression Value { get; }
 
-        public Assign(Token name, IExpression<T> value)
+        public Assign(Token name, IExpression value)
         {
             Name = name;
             Value = value;
         }
 
-        public T Accept(IVisitor<T> visitor)
+        public object Accept(IVisitor visitor)
         {
             return visitor.VisitAssignExpr(this);
         }

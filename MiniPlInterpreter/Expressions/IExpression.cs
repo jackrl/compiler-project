@@ -4,8 +4,8 @@ using System.Text;
 
 namespace MiniPlInterpreter.Expressions
 {
-    interface IExpression<T>
+    interface IExpression
     {
-        T Accept(IVisitor<T> visitor);
+        object Accept(IVisitor visitor);
     }
 }

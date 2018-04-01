@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MiniPlInterpreter.Statements
 {
-    class Read<T> : IStatement<T>
+    class Read : IStatement
     {
         public Token Name { get; }
 
@@ -13,7 +13,7 @@ namespace MiniPlInterpreter.Statements
             Name = name;
         }
 
-        public void Accept(IVisitor<T> visitor)
+        public void Accept(IVisitor visitor)
         {
             visitor.VisitReadStmt(this);
         }

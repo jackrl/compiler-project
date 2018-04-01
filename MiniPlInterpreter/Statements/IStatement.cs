@@ -4,8 +4,8 @@ using System.Text;
 
 namespace MiniPlInterpreter.Statements
 {
-    interface IStatement<T>
+    interface IStatement
     {
-        void Accept(IVisitor<T> visitor);
+        void Accept(IVisitor visitor);
     }
 }

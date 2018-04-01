@@ -9,7 +9,7 @@ using static MiniPlInterpreter.Error;
 
 namespace MiniPlInterpreter
 {
-    class Interpreter : IVisitor<Object>
+    class Interpreter : IVisitor
     {
         private Environment environment = new Environment();
         private Queue<string> inputBuffer = new Queue<string>();
@@ -23,7 +23,7 @@ namespace MiniPlInterpreter
         }
 
         // Returns false if there were runtime errors and true if there were no runtime errors
-        public bool Interpret(List<IStatement<Object>> statements)
+        public bool Interpret(List<IStatement> statements)
         {
             try
             {
@@ -40,13 +40,13 @@ namespace MiniPlInterpreter
             }
         }
 
-        public void VisitPrintStmt(Print<Object> stmt)
+        public void VisitPrintStmt(Print stmt)
         {
             var value = Evaluate(stmt.Expression);
             output.Write(value.ToString());
         }
 
-        public void VisitReadStmt(Read<object> stmt)
+        public void VisitReadStmt(Read stmt)
         {
             // TODO: Single word read?? Some kind of buffer?
             var value = input.ReadLine();
@@ -58,9 +58,9 @@ namespace MiniPlInterpreter
             }
         }
 
-        public void VisitVarStmt(Var<Object> stmt)
+        public void VisitVarStmt(Var stmt)
         {
-            Object value = null;
+            object value = null;
             if (stmt.Initializer != null)
             {
                 value = Evaluate(stmt.Initializer);
@@ -85,7 +85,7 @@ namespace MiniPlInterpreter
             if (error != null) throw new RuntimeErrorException(error);
         }
 
-        public void VisitAssertStmt(Assert<Object> stmt)
+        public void VisitAssertStmt(Assert stmt)
         {
             var assertion = Evaluate(stmt.Expression);
 
@@ -102,7 +102,7 @@ namespace MiniPlInterpreter
             }
         }
 
-        public void VisitForStmt(For<object> stmt)
+        public void VisitForStmt(For stmt)
         {
             var controlVar = stmt.ControlVar;
             var controlVarFromEnv = environment.Get(controlVar);
@@ -138,12 +138,12 @@ namespace MiniPlInterpreter
                 foreach (var statement in stmt.Statements)
                 {
                     // Check that control variable is no reassigned in the loop
-                    if(statement.GetType().Equals(typeof(ExpressionStmt<Object>)))
+                    if(statement.GetType().Equals(typeof(ExpressionStmt)))
                     {
-                        var exprStmt = (ExpressionStmt<Object>)statement;
-                        if (exprStmt.Expression.GetType().Equals(typeof(Assign<Object>)))
+                        var exprStmt = (ExpressionStmt)statement;
+                        if (exprStmt.Expression.GetType().Equals(typeof(Assign)))
                         {
-                            var assignExpr = (Assign<Object>)exprStmt.Expression;
+                            var assignExpr = (Assign)exprStmt.Expression;
                             if(assignExpr.Name.Lexeme == controlVar.Lexeme)
                             {
                                 Error error = new Error(controlVar.Line, ErrorType.SEMANTIC, "0015", $"The control variable '{controlVar.Lexeme}' must not be reassigned inside the for loop.");
@@ -158,17 +158,17 @@ namespace MiniPlInterpreter
             }
         }
 
-        public void VisitExpressionStmt(ExpressionStmt<Object> stmt)
+        public void VisitExpressionStmt(ExpressionStmt stmt)
         {
             Evaluate(stmt.Expression);
         }
 
-        public Object VisitLiteralExpr(Literal<Object> expr)
+        public object VisitLiteralExpr(Literal expr)
         {
             return expr.Value;
         }
 
-        public Object VisitUnaryExpr(Unary<Object> expr)
+        public object VisitUnaryExpr(Unary expr)
         {
             var right = Evaluate(expr.Operand);
 
@@ -187,7 +187,7 @@ namespace MiniPlInterpreter
             return null;
         }
 
-        public Object VisitBinaryExpr(Binary<Object> expr)
+        public object VisitBinaryExpr(Binary expr)
         {
             var left = Evaluate(expr.Left);
             var right = Evaluate(expr.Right);
@@ -244,12 +244,12 @@ namespace MiniPlInterpreter
             return null;
         }
 
-        public Object VisitGroupingExpr(Grouping<Object> expr)
+        public object VisitGroupingExpr(Grouping expr)
         {
             return Evaluate(expr.Expression);
         }
 
-        public Object VisitVariableExpr(Variable<Object> expr)
+        public object VisitVariableExpr(Variable expr)
         {
             var value = environment.Get(expr.Name);
             if(value == null)
@@ -260,9 +260,9 @@ namespace MiniPlInterpreter
             return value;
         }
 
-        public Object VisitAssignExpr(Assign<Object> expr)
+        public object VisitAssignExpr(Assign expr)
         {
-            Object value = Evaluate(expr.Value);
+            object value = Evaluate(expr.Value);
 
             var error = environment.Assign(expr.Name, value, false);
             if (error != null)
@@ -272,9 +272,9 @@ namespace MiniPlInterpreter
             return value;
         }
 
-        public Object VisitLogicalExpr(Logical<Object> expr)
+        public object VisitLogicalExpr(Logical expr)
         {
-            Object left = Evaluate(expr.Left);
+            object left = Evaluate(expr.Left);
             if(!left.GetType().Equals(typeof(bool)))
             {
                 Error error = new Error(expr.Operator.Line, ErrorType.SEMANTIC, "0009", $"The left expression of '{expr.Operator.Lexeme}' must be evaluable to a boolean.");
@@ -283,7 +283,7 @@ namespace MiniPlInterpreter
 
             if (!(bool)left) return left;
 
-            Object right = Evaluate(expr.Right);
+            object right = Evaluate(expr.Right);
             if (!right.GetType().Equals(typeof(bool)))
             {
                 Error error = new Error(expr.Operator.Line, ErrorType.SEMANTIC, "0010", $"The rights expression of '{expr.Operator.Lexeme}' must be evaluable to a boolean.");
@@ -292,24 +292,24 @@ namespace MiniPlInterpreter
             return right;
         }
 
-        private void Execute(IStatement<Object> stmt)
+        private void Execute(IStatement stmt)
         {
             stmt.Accept(this);
         }
 
-        private Object Evaluate(IExpression<Object> expr)
+        private object Evaluate(IExpression expr)
         {
             return expr.Accept(this);
         }
 
-        private void CheckIntegerOperand(Token oper, Object operand)
+        private void CheckIntegerOperand(Token oper, object operand)
         {
             if (operand.GetType().Equals(typeof(int))) return;
             Error error = new Error(oper.Line, ErrorType.SEMANTIC, "0002", $"Operand of '{oper.Lexeme}' must be an integer.");
             throw new RuntimeErrorException(error);
         }
 
-        private void CheckIntegerOperand(Token oper, Object left, Object right)
+        private void CheckIntegerOperand(Token oper, object left, object right)
         {
             if (left.GetType().Equals(typeof(int)) && right.GetType().Equals(typeof(int))) return;
             
@@ -317,7 +317,7 @@ namespace MiniPlInterpreter
             throw new RuntimeErrorException(error);
         }
 
-        private void CheckBoolOperand(Token oper, Object operand)
+        private void CheckBoolOperand(Token oper, object operand)
         {
             if (operand.GetType().Equals(typeof(bool))) return;
             Error error = new Error(oper.Line, ErrorType.SEMANTIC, "0004", $"Operand of '{oper.Lexeme}' must be a bool.");

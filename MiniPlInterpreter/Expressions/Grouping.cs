@@ -4,16 +4,16 @@ using System.Text;
 
 namespace MiniPlInterpreter.Expressions
 {
-    class Grouping<T> : IExpression<T>
+    class Grouping : IExpression
     {
-        public IExpression<T> Expression { get; }
+        public IExpression Expression { get; }
 
-        public Grouping(IExpression<T> expr)
+        public Grouping(IExpression expr)
         {
             Expression = expr;
         }
 
-        public T Accept(IVisitor<T> visitor)
+        public object Accept(IVisitor visitor)
         {
             return visitor.VisitGroupingExpr(this);
         }

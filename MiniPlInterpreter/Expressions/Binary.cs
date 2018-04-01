@@ -4,20 +4,20 @@ using System.Text;
 
 namespace MiniPlInterpreter.Expressions
 {
-    class Binary<T> : IExpression<T>
+    class Binary : IExpression
     {
-        public IExpression<T> Left { get; }
+        public IExpression Left { get; }
         public Token Operator { get; }
-        public IExpression<T> Right { get; }
+        public IExpression Right { get; }
 
-        public Binary(IExpression<T> left, Token oper, IExpression<T> right)
+        public Binary(IExpression left, Token oper, IExpression right)
         {
             Left = left;
             Operator = oper;
             Right = right;
         }
 
-        public T Accept(IVisitor<T> visitor)
+        public object Accept(IVisitor visitor)
         {
             return visitor.VisitBinaryExpr(this);
         }

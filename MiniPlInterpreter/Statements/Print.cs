@@ -5,17 +5,17 @@ using System.Text;
 
 namespace MiniPlInterpreter.Statements
 {
-    class Print<T> : IStatement<T>
+    class Print : IStatement
     {
-        public IExpression<T> Expression { get; }
+        public IExpression Expression { get; }
 
 
-        public Print(IExpression<T> expr)
+        public Print(IExpression expr)
         {
             Expression = expr;
         }
 
-        public void Accept(IVisitor<T> visitor)
+        public void Accept(IVisitor visitor)
         {
             visitor.VisitPrintStmt(this);
         }

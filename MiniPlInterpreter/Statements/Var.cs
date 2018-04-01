@@ -5,20 +5,20 @@ using System.Text;
 
 namespace MiniPlInterpreter.Statements
 {
-    class Var<T> : IStatement<T>
+    class Var : IStatement
     {
         public Token Name { get; }
         public Token Type { get; }
-        public IExpression<T> Initializer { get; }
+        public IExpression Initializer { get; }
 
-        public Var(Token name, Token type, IExpression<T> initializer)
+        public Var(Token name, Token type, IExpression initializer)
         {
             Name = name;
             Type = type;
             Initializer = initializer;
         }
 
-        public void Accept(IVisitor<T> visitor)
+        public void Accept(IVisitor visitor)
         {
             visitor.VisitVarStmt(this);
         }

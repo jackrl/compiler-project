@@ -6,23 +6,23 @@ using System.Text;
 
 namespace MiniPlInterpreter
 {
-    interface IVisitor<T>
+    interface IVisitor
     {
         // Expressions
-        T VisitLiteralExpr(Literal<T> expr);
-        T VisitUnaryExpr(Unary<T> expr);
-        T VisitBinaryExpr(Binary<T> expr);
-        T VisitGroupingExpr(Grouping<T> expr);
-        T VisitVariableExpr(Variable<T> expr);
-        T VisitAssignExpr(Assign<T> expr);
-        T VisitLogicalExpr(Logical<T> expr);
+        object VisitLiteralExpr(Literal expr);
+        object VisitUnaryExpr(Unary expr);
+        object VisitBinaryExpr(Binary expr);
+        object VisitGroupingExpr(Grouping expr);
+        object VisitVariableExpr(Variable expr);
+        object VisitAssignExpr(Assign expr);
+        object VisitLogicalExpr(Logical expr);
 
         // Statements
-        void VisitVarStmt(Var<T> stmt);
-        void VisitPrintStmt(Print<T> stmt);
-        void VisitReadStmt(Read<T> stmt);
-        void VisitForStmt(For<T> stmt);
-        void VisitAssertStmt(Assert<T> stmt);
-        void VisitExpressionStmt(ExpressionStmt<T> stmt);
+        void VisitVarStmt(Var stmt);
+        void VisitPrintStmt(Print stmt);
+        void VisitReadStmt(Read stmt);
+        void VisitForStmt(For stmt);
+        void VisitAssertStmt(Assert stmt);
+        void VisitExpressionStmt(ExpressionStmt stmt);
     }
 }

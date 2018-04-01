@@ -4,18 +4,18 @@ using System.Text;
 
 namespace MiniPlInterpreter.Expressions
 {
-    class Unary<T> : IExpression<T>
+    class Unary : IExpression
     {
         public Token Operator { get; }
-        public IExpression<T> Operand { get; }
+        public IExpression Operand { get; }
 
-        public Unary(Token oper, IExpression<T> operand)
+        public Unary(Token oper, IExpression operand)
         {
             Operator = oper;
             Operand = operand;
         }
 
-        public T Accept(IVisitor<T> visitor)
+        public object Accept(IVisitor visitor)
         {
             return visitor.VisitUnaryExpr(this);
         }

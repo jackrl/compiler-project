@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MiniPlInterpreter.Expressions
 {
-    class Variable<T> : IExpression<T>
+    class Variable : IExpression
     {
         public Token Name { get; }
 
@@ -13,7 +13,7 @@ namespace MiniPlInterpreter.Expressions
             Name = name;
         }
 
-        public T Accept(IVisitor<T> visitor)
+        public object Accept(IVisitor visitor)
         {
             return visitor.VisitVariableExpr(this);
         }

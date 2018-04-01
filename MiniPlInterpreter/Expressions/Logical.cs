@@ -4,19 +4,19 @@ using System.Text;
 
 namespace MiniPlInterpreter.Expressions
 {
-    class Logical<T> : IExpression<T>
+    class Logical : IExpression
     {
-        public IExpression<T> Left { get; }
+        public IExpression Left { get; }
         public Token Operator { get; }
-        public IExpression<T> Right { get; }
+        public IExpression Right { get; }
 
-        public Logical(IExpression<T> left, Token oper, IExpression<T> right)
+        public Logical(IExpression left, Token oper, IExpression right)
         {
             Left = left;
             Operator = oper;
             Right = right;
         }
-        public T Accept(IVisitor<T> visitor)
+        public object Accept(IVisitor visitor)
         {
             return visitor.VisitLogicalExpr(this);
         }

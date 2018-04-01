@@ -7,9 +7,9 @@ namespace MiniPlInterpreter
 {
     class Environment
     {
-        private readonly Dictionary<string, Object> values = new Dictionary<string, Object>();
+        private readonly Dictionary<string, object> values = new Dictionary<string, object>();
 
-        public Error Define(Token token, Object value)
+        public Error Define(Token token, object value)
         {
             if (values.ContainsKey(token.Lexeme))
             {
@@ -20,7 +20,7 @@ namespace MiniPlInterpreter
             return null;
         }
 
-        public Object Get(Token name)
+        public object Get(Token name)
         {
             if (values.ContainsKey(name.Lexeme))
             {
@@ -30,7 +30,7 @@ namespace MiniPlInterpreter
             return null;
         }
 
-        public Error Assign(Token name, Object value, bool ParseInteger)
+        public Error Assign(Token name, object value, bool ParseInteger)
         {
             if (values.ContainsKey(name.Lexeme))
             {
