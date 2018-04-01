@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static MiniPlInterpreter.Error;
 
 namespace MiniPlInterpreter
 {
@@ -39,7 +40,6 @@ namespace MiniPlInterpreter
         {
             while (!ReachedEnd())
             {
-                // We are at the beginning of the next lexeme.
                 start = current;
                 ScanToken();
             }
@@ -78,7 +78,7 @@ namespace MiniPlInterpreter
                         AddToken(TokenType.RANGE);
                         break;
                     }
-                    errors.Add(new Error(line, "Expected '.' after '.'"));
+                    errors.Add(new Error(line, ErrorType.SCANNER, "0001", "Expected '.' after '.'"));
                     break;
                 case '/':
                     if (!SkipComments()) AddToken(TokenType.SLASH);
@@ -96,7 +96,7 @@ namespace MiniPlInterpreter
                     }
                     else
                     {
-                        errors.Add(new Error(line, $"Unexpexted character '{c}'"));
+                        errors.Add(new Error(line, ErrorType.SCANNER, "0002", $"Unexpexted character '{c}'"));
                     }
                     break;
             }
@@ -159,7 +159,7 @@ namespace MiniPlInterpreter
                     }
                     if (ReachedEnd())
                     {
-                        errors.Add(new Error(line, $"Reached end of file without closing block comment. Expected '*/' {nestedComments} more times"));
+                        errors.Add(new Error(line, ErrorType.SCANNER, "0003", $"Reached end of file without closing block comment. Expected '*/' {nestedComments} more times"));
                         break;
                     }
 
@@ -187,7 +187,7 @@ namespace MiniPlInterpreter
 
             if (Peek() == '\n' || ReachedEnd())
             {
-                errors.Add(new Error(line, "Unterminated string"));
+                errors.Add(new Error(line, ErrorType.SCANNER, "0004", "Unterminated string"));
                 return;
             }
 
@@ -214,7 +214,7 @@ namespace MiniPlInterpreter
                 case '\'': sb.Append('\''); break;
                 case '"': sb.Append('\"'); break;
                 default:
-                    errors.Add(new Error(line, $"Unrecongnized escape sequence '\\{nextChar}'"));
+                    errors.Add(new Error(line, ErrorType.SCANNER, "0005", $"Unrecongnized escape sequence '\\{nextChar}'"));
                     sb.Append($"\\{nextChar}");
                     break;
             }

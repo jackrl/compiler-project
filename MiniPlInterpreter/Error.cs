@@ -6,18 +6,47 @@ namespace MiniPlInterpreter
 {
     public class Error
     {
-        public int Line { get; set; }
-        public string Message { get; set; }
+        public enum ErrorType {
+            SCANNER,
+            PARSER,
+            SEMANTIC,
+            ASSERT
+        }
 
-        public Error(int line, String message)
+        public int Line { get; }
+        public string Message { get; }
+        public ErrorType Type { get; }
+        public string Identifier { get; }
+
+        public Error(int line, ErrorType type, string identifier, String message)
         {
             Line = line;
+            Type = type;
+            Identifier = identifier;
             Message = message;
         }
 
         public override string ToString()
         {
-            return "[line " + Line + "] Error: " + Message;
+            string tagStr = "";
+            switch (Type)
+            {
+                case ErrorType.SCANNER:
+                    tagStr = "SCA-";
+                    break;
+                case ErrorType.PARSER:
+                    tagStr = "PAR-";
+                    break;
+                case ErrorType.SEMANTIC:
+                    tagStr = "SEM-";
+                    break;
+                default:
+                    break;
+            }
+            tagStr += Identifier;
+            if (Type == ErrorType.ASSERT) tagStr = "ASSERT";
+
+            return $"[line {Line}] Error ({tagStr}): {Message}";
         }
     }
 }

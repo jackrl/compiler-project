@@ -1,4 +1,7 @@
-﻿using System;
+﻿using MiniPlInterpreter.Expressions;
+using MiniPlInterpreter.Helpers;
+using MiniPlInterpreter.Statements;
+using System;
 using System.Collections.Generic;
 
 namespace MiniPlInterpreter
@@ -39,6 +42,7 @@ namespace MiniPlInterpreter
 
         private static void RunPrompt()
         {
+            Console.WriteLine("To exit enter: quit");
             while (true) { 
                 Console.Write("> ");
                 var input = Console.ReadLine();
@@ -49,23 +53,59 @@ namespace MiniPlInterpreter
 
         private static void Run(String source)
         {
+            // SCANNER
             Scanner scanner = new Scanner(source);
             List<Token> tokens = scanner.ScanTokens();
 
-            // For now, just print the tokens.
+            // Scanner output
+            var scanErrors = scanner.Errors;
+            if (scanErrors.Count > 0)
+            {
+                Console.WriteLine("SCANNER:");
+                Console.WriteLine("Errors:");
+                foreach (var error in scanErrors)
+                {
+                    Console.WriteLine(error);
+                }
+            }
+            /*
             Console.WriteLine("Tokens:");
             foreach (var token in tokens)
             {
                 Console.WriteLine(token);
             }
-            var errors = scanner.Errors;
-            if (errors.Count > 0)
+            */
+
+            // PARSER
+            Parser<Object> parser = new Parser<Object>(tokens);
+            var statements = parser.Parse();
+
+            // Parser output
+            var parseErrors = parser.Errors;
+            if (parseErrors.Count > 0)
             {
+                Console.WriteLine("PARSER:");
                 Console.WriteLine("Errors:");
-                foreach (var error in errors)
+                foreach (var error in parseErrors)
                 {
                     Console.WriteLine(error);
                 }
+            }
+
+            // INTERPRETER
+            Console.WriteLine("INTERPRETER:");
+            if (scanErrors.Count == 0 && parseErrors.Count == 0)
+            {
+                //Change to be configurable
+                Interpreter interpreter = new Interpreter(Console.In, Console.Out);
+
+                //Interpreter output
+                interpreter.Interpret(statements);
+                Console.WriteLine();
+            }
+            else
+            {
+                Console.WriteLine("The interpreter can't run as the scanner or/and parser have found errors.");
             }
         }
     }

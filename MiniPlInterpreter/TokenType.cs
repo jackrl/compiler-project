@@ -28,7 +28,7 @@ namespace MiniPlInterpreter
         IDENTIFIER,     //
         INTEGER,        // 'int'
         STRING,         // 'string'
-        BOOL,           // 'bool' just a type??
+        BOOL,           // 'bool'
 
         // Keywords
         VAR,            // 'var'
