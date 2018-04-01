@@ -6,9 +6,9 @@ namespace MiniPlInterpreter.Expressions
 {
     class Literal : IExpression
     {
-        public Object Value { get; }
+        public object Value { get; }
 
-        public Literal(Object value)
+        public Literal(object value)
         {
             Value = value;
         }

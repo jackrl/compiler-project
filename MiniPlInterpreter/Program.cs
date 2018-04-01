@@ -9,14 +9,21 @@ namespace MiniPlInterpreter
     {
         static void Main(string[] args)
         {
+            string helpMessage = "MiniPlInterpreter:\n  With no arguments: Run programs on the command line by writing them on one line\n  With file path: Run the file";
             if (args.Length > 1)
             {
-                Console.WriteLine("Usage: minipl [script]");
+                Console.WriteLine(helpMessage);
             }
             else if (args.Length == 1)
             {
-                Console.WriteLine("Running script: " + args[0]);
-                RunFile(args[0]);
+                if (args[0] == "--help" || args[0] == "-h" || args[0] == "help") Console.WriteLine(helpMessage);
+                else
+                {
+                    Console.WriteLine("Running script: " + args[0]);
+                    RunFile(args[0]);
+                    Console.WriteLine("Press enter to close...");
+                    Console.ReadLine();
+                }
             }
             else
             {
@@ -85,7 +92,6 @@ namespace MiniPlInterpreter
             }
 
             // INTERPRETER
-            Console.WriteLine("INTERPRETER:");
             if (scanErrors.Count == 0 && parseErrors.Count == 0)
             {
                 //Change to be configurable
@@ -97,6 +103,7 @@ namespace MiniPlInterpreter
             }
             else
             {
+                Console.WriteLine("INTERPRETER:");
                 Console.WriteLine("The interpreter can't run as the scanner or/and parser have found errors.");
             }
         }

@@ -10,6 +10,7 @@ namespace MiniPlInterpreter
             SCANNER,
             PARSER,
             SEMANTIC,
+            RUNTIME,
             ASSERT
         }
 
@@ -39,6 +40,9 @@ namespace MiniPlInterpreter
                     break;
                 case ErrorType.SEMANTIC:
                     tagStr = "SEM-";
+                    break;
+                case ErrorType.RUNTIME:
+                    tagStr = "RTM-";
                     break;
                 default:
                     break;

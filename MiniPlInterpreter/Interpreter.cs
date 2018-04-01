@@ -11,15 +11,12 @@ namespace MiniPlInterpreter
 {
     class Interpreter : IVisitor
     {
-        private Environment environment = new Environment();
-        private Queue<string> inputBuffer = new Queue<string>();
-        private TextReader input;
-        private TextWriter output;
+        private Environment environment;
+
 
         public Interpreter(TextReader input, TextWriter output)
         {
-            this.input = input;
-            this.output= output;
+            environment = new Environment(input, output);
         }
 
         // Returns false if there were runtime errors and true if there were no runtime errors
@@ -43,13 +40,12 @@ namespace MiniPlInterpreter
         public void VisitPrintStmt(Print stmt)
         {
             var value = Evaluate(stmt.Expression);
-            output.Write(value.ToString());
+            environment.Write(value);
         }
 
         public void VisitReadStmt(Read stmt)
         {
-            // TODO: Single word read?? Some kind of buffer?
-            var value = input.ReadLine();
+            var value = environment.Read();
 
             var error = environment.Assign(stmt.Name, value, true);
             if (error != null)
@@ -91,7 +87,7 @@ namespace MiniPlInterpreter
 
             if (!assertion.GetType().Equals(typeof(bool)))
             {
-                Error error = new Error(stmt.Token.Line, ErrorType.SEMANTIC, "0016", $"The assertion expressioncan't be evaluated to boolean");
+                Error error = new Error(stmt.Token.Line, ErrorType.RUNTIME, "0001", $"The assertion expressioncan't be evaluated to boolean");
                 throw new RuntimeErrorException(error);
             }
 
@@ -108,26 +104,26 @@ namespace MiniPlInterpreter
             var controlVarFromEnv = environment.Get(controlVar);
             if (controlVarFromEnv == null)
             {
-                Error error = new Error(controlVar.Line, ErrorType.SEMANTIC, "0011", $"Variable '{controlVar.Lexeme}' must be defined before the for loop.");
+                Error error = new Error(controlVar.Line, ErrorType.RUNTIME, "0002", $"Variable '{controlVar.Lexeme}' must be defined before the for loop.");
                 throw new RuntimeErrorException(error);
             }
             else if (!controlVarFromEnv.GetType().Equals(typeof(int)))
             {
-                Error error = new Error(controlVar.Line, ErrorType.SEMANTIC, "0012", $"Variable '{controlVar.Lexeme}' must be of type integer.");
+                Error error = new Error(controlVar.Line, ErrorType.RUNTIME, "0003", $"Variable '{controlVar.Lexeme}' must be of type integer.");
                 throw new RuntimeErrorException(error);
             }
 
             var start = Evaluate(stmt.Start);
             if (!start.GetType().Equals(typeof(int)))
             {
-                Error error = new Error(controlVar.Line, ErrorType.SEMANTIC, "0013", $"The starting expression of the for loop can't be evaluated to an integer.");
+                Error error = new Error(controlVar.Line, ErrorType.RUNTIME, "0004", $"The starting expression of the for loop can't be evaluated to an integer.");
                 throw new RuntimeErrorException(error);
             }
 
             var end = Evaluate(stmt.End);
             if (!end.GetType().Equals(typeof(int)))
             {
-                Error error = new Error(controlVar.Line, ErrorType.SEMANTIC, "0014", $"The ending expression of the for loop can't be evaluated to an integer.");
+                Error error = new Error(controlVar.Line, ErrorType.RUNTIME, "0005", $"The ending expression of the for loop can't be evaluated to an integer.");
                 throw new RuntimeErrorException(error);
             }
 
@@ -146,7 +142,7 @@ namespace MiniPlInterpreter
                             var assignExpr = (Assign)exprStmt.Expression;
                             if(assignExpr.Name.Lexeme == controlVar.Lexeme)
                             {
-                                Error error = new Error(controlVar.Line, ErrorType.SEMANTIC, "0015", $"The control variable '{controlVar.Lexeme}' must not be reassigned inside the for loop.");
+                                Error error = new Error(controlVar.Line, ErrorType.RUNTIME, "0006", $"The control variable '{controlVar.Lexeme}' must not be reassigned inside the for loop.");
                                 throw new RuntimeErrorException(error);
                             }
                         }
@@ -201,7 +197,7 @@ namespace MiniPlInterpreter
                     if (left.GetType().Equals(typeof(string)) && right.GetType().Equals(typeof(string)))
                         return (String)left + (String)right;
 
-                    error = new Error(expr.Operator.Line, ErrorType.SEMANTIC, "0001", $"The operands of the operand '{expr.Operator.Lexeme}' must be integers or strings.");
+                    error = new Error(expr.Operator.Line, ErrorType.RUNTIME, "0007", $"The operands of the operand '{expr.Operator.Lexeme}' must be integers or strings.");
                     throw new RuntimeErrorException(error);
                 case TokenType.MINUS:
                     CheckIntegerOperand(expr.Operator, left, right);
@@ -220,7 +216,7 @@ namespace MiniPlInterpreter
                     if (left.GetType().Equals(typeof(bool)) && right.GetType().Equals(typeof(bool)))
                         return (bool)left == (bool)right;
 
-                    error = new Error(expr.Operator.Line, ErrorType.SEMANTIC, "00017", $"The operands of the operand '{expr.Operator.Lexeme}' must be of the same type to be compared.");
+                    error = new Error(expr.Operator.Line, ErrorType.RUNTIME, "0008", $"The operands of the operand '{expr.Operator.Lexeme}' must be of the same type to be compared.");
                     throw new RuntimeErrorException(error);
                 // Don't really know what kind of comparison I'm supposed to do on strings and booleans with the less operator
                 // Strings: Compared alphabetically
@@ -237,7 +233,7 @@ namespace MiniPlInterpreter
                     if (left.GetType().Equals(typeof(bool)) && right.GetType().Equals(typeof(bool)))
                         return !(bool)left && (bool)right;
 
-                    error = new Error(expr.Operator.Line, ErrorType.SEMANTIC, "00018", $"The operands of the operand '{expr.Operator.Lexeme}' must be of the same type to be compared.");
+                    error = new Error(expr.Operator.Line, ErrorType.RUNTIME, "0009", $"The operands of the operand '{expr.Operator.Lexeme}' must be of the same type to be compared.");
                     throw new RuntimeErrorException(error);
             }
 
@@ -254,7 +250,7 @@ namespace MiniPlInterpreter
             var value = environment.Get(expr.Name);
             if(value == null)
             {
-                Error error = new Error(expr.Name.Line, ErrorType.SEMANTIC, "0005", $"Variable '{expr.Name.Lexeme}' hasn't been declared.");
+                Error error = new Error(expr.Name.Line, ErrorType.RUNTIME, "0010", $"Variable '{expr.Name.Lexeme}' hasn't been declared.");
                 throw new RuntimeErrorException(error);
             }
             return value;
@@ -277,7 +273,7 @@ namespace MiniPlInterpreter
             object left = Evaluate(expr.Left);
             if(!left.GetType().Equals(typeof(bool)))
             {
-                Error error = new Error(expr.Operator.Line, ErrorType.SEMANTIC, "0009", $"The left expression of '{expr.Operator.Lexeme}' must be evaluable to a boolean.");
+                Error error = new Error(expr.Operator.Line, ErrorType.RUNTIME, "0011", $"The left expression of '{expr.Operator.Lexeme}' must be evaluable to a boolean.");
                 throw new RuntimeErrorException(error);
             }
 
@@ -286,7 +282,7 @@ namespace MiniPlInterpreter
             object right = Evaluate(expr.Right);
             if (!right.GetType().Equals(typeof(bool)))
             {
-                Error error = new Error(expr.Operator.Line, ErrorType.SEMANTIC, "0010", $"The rights expression of '{expr.Operator.Lexeme}' must be evaluable to a boolean.");
+                Error error = new Error(expr.Operator.Line, ErrorType.RUNTIME, "0012", $"The rights expression of '{expr.Operator.Lexeme}' must be evaluable to a boolean.");
                 throw new RuntimeErrorException(error);
             }
             return right;
@@ -305,7 +301,7 @@ namespace MiniPlInterpreter
         private void CheckIntegerOperand(Token oper, object operand)
         {
             if (operand.GetType().Equals(typeof(int))) return;
-            Error error = new Error(oper.Line, ErrorType.SEMANTIC, "0002", $"Operand of '{oper.Lexeme}' must be an integer.");
+            Error error = new Error(oper.Line, ErrorType.RUNTIME, "0013", $"Operand of '{oper.Lexeme}' must be an integer.");
             throw new RuntimeErrorException(error);
         }
 
@@ -313,14 +309,14 @@ namespace MiniPlInterpreter
         {
             if (left.GetType().Equals(typeof(int)) && right.GetType().Equals(typeof(int))) return;
             
-            Error error = new Error(oper.Line, ErrorType.SEMANTIC, "0003", $"Both operands of '{oper.Lexeme}' must be integers.");
+            Error error = new Error(oper.Line, ErrorType.RUNTIME, "0014", $"Both operands of '{oper.Lexeme}' must be integers.");
             throw new RuntimeErrorException(error);
         }
 
         private void CheckBoolOperand(Token oper, object operand)
         {
             if (operand.GetType().Equals(typeof(bool))) return;
-            Error error = new Error(oper.Line, ErrorType.SEMANTIC, "0004", $"Operand of '{oper.Lexeme}' must be a bool.");
+            Error error = new Error(oper.Line, ErrorType.RUNTIME, "0015", $"Operand of '{oper.Lexeme}' must be a bool.");
             throw new RuntimeErrorException(error);
         }
     }

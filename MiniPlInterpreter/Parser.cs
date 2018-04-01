@@ -47,9 +47,9 @@ namespace MiniPlInterpreter
 
         private IStatement VarDeclaration()
         {
-            var name = Consume(TokenType.IDENTIFIER, "0006", "Expected variable name.");
+            var name = Consume(TokenType.IDENTIFIER, "0001", "Expected variable name.");
 
-            Consume(TokenType.COLON, "0007", "Expected ':' after variable name.");
+            Consume(TokenType.COLON, "0002", "Expected ':' after variable name.");
             Token type;
             if (Match(TokenType.STRING, TokenType.INTEGER, TokenType.BOOL))
             {
@@ -57,7 +57,7 @@ namespace MiniPlInterpreter
             }
             else
             {
-                HandleError(Peek(), "0008", "Expected type after valriable delarantion's ':'.");
+                HandleError(Peek(), "0003", "Expected type after valriable delarantion's ':'.");
                 throw new ParserErrorException();
             }
 
@@ -68,7 +68,7 @@ namespace MiniPlInterpreter
                 initializer = Expression();
             }
 
-            Consume(TokenType.SEMICOLON, "0009", "Expected ';' after variable declaration.");
+            Consume(TokenType.SEMICOLON, "0004", "Expected ';' after variable declaration.");
             return new Var(name, type, initializer);
         }
 
@@ -85,14 +85,14 @@ namespace MiniPlInterpreter
         private IStatement PrintStatement()
         {
             var value = Expression();
-            Consume(TokenType.SEMICOLON, "0003", "Expected ';' after value to print.");
+            Consume(TokenType.SEMICOLON, "0005", "Expected ';' after value to print.");
             return new Print(value);
         }
 
         private IStatement ReadStatement()
         {
             var name = Identifier();
-            Consume(TokenType.SEMICOLON, "0011", "Expected ';' after varibale to read to.");
+            Consume(TokenType.SEMICOLON, "0006", "Expected ';' after varibale to read to.");
             return new Read(name);
         }
         private IStatement AssertStatement()
@@ -105,28 +105,28 @@ namespace MiniPlInterpreter
             }
             else
             {
-                HandleError(Peek(), "0017", "Expected '(' ath the start of the assertion expression of assert.");
+                HandleError(Peek(), "0007", "Expected '(' ath the start of the assertion expression of assert.");
                 throw new ParserErrorException();
             }
             
             if(Previous().Type != TokenType.RIGHT_PAREN)
             {
-                HandleError(Peek(), "0018", "Expected ')' after assertion expression of assert.");
+                HandleError(Peek(), "0008", "Expected ')' after assertion expression of assert.");
                 throw new ParserErrorException();
             }
             
-            Consume(TokenType.SEMICOLON, "0019", "Expected ';' after the assertion of assert.");
+            Consume(TokenType.SEMICOLON, "0009", "Expected ';' after the assertion of assert.");
             return new Assert(token, assertion);
         }
 
         private IStatement ForStatement()
         {
             var controlVar = Identifier();
-            Consume(TokenType.IN, "0012", "Expected 'in' after the control varibale of the for loop.");
+            Consume(TokenType.IN, "0010", "Expected 'in' after the control varibale of the for loop.");
             var start = Expression();
-            Consume(TokenType.RANGE, "0013", "Expected '..' after the start expression of the for loop.");
+            Consume(TokenType.RANGE, "0011", "Expected '..' after the start expression of the for loop.");
             var end = Expression();
-            Consume(TokenType.DO, "0014", "Expected 'do' after the end expression of the for loop.");
+            Consume(TokenType.DO, "0012", "Expected 'do' after the end expression of the for loop.");
 
             var statements = new List<IStatement>();
             while (!IsAtEnd() && !Match(TokenType.END))
@@ -141,8 +141,8 @@ namespace MiniPlInterpreter
                     continue;
                 }
             }
-            Consume(TokenType.FOR, "0015", "Expected 'for' at the end of the loop after 'end'.");
-            Consume(TokenType.SEMICOLON, "0016", "Expected ';' at the end of the loop after the ending 'for'.");
+            Consume(TokenType.FOR, "0013", "Expected 'for' at the end of the loop after 'end'.");
+            Consume(TokenType.SEMICOLON, "0014", "Expected ';' at the end of the loop after the ending 'for'.");
 
             return new For(controlVar, start, end, statements);
         }
@@ -150,14 +150,14 @@ namespace MiniPlInterpreter
         private IStatement ExpressionStatement()
         {
             var expr = Expression();
-            Consume(TokenType.SEMICOLON, "0004", "Expected ';' after expression.");
+            Consume(TokenType.SEMICOLON, "0015", "Expected ';' after expression.");
             return new ExpressionStmt(expr);
         }
 
         private Token Identifier()
         {
             if (Match(TokenType.IDENTIFIER)) return Previous();
-            HandleError(Peek(), "0012", "Expected identifier.");
+            HandleError(Peek(), "0016", "Expected identifier.");
             throw new ParserErrorException();
         }
 
@@ -181,7 +181,7 @@ namespace MiniPlInterpreter
                     return new Assign(name, value);
                 }
 
-                HandleError(equals, "0010", "Invalid assignment target.");
+                HandleError(equals, "0017", "Invalid assignment target.");
                 throw new ParserErrorException();
             }
 
@@ -271,12 +271,12 @@ namespace MiniPlInterpreter
             if (Match(TokenType.LEFT_PAREN))
             {
                 var expr = Expression();
-                Consume(TokenType.RIGHT_PAREN, "0001", "Expected ')' after expression.");
+                Consume(TokenType.RIGHT_PAREN, "0018", "Expected ')' after expression.");
                 return new Grouping(expr);
             }
 
             // TODO: Is this ok?
-            HandleError(Peek(), "0002", "Expected expression.");
+            HandleError(Peek(), "0019", "Expected expression.");
             throw new ParserErrorException();
         }
 
